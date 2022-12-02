@@ -1,42 +1,49 @@
-lines = readlines("data.txt")
+abstract type Strategy end
 
-parseline(l) = split(l, " ")
+struct Rock <: Strategy end
+struct Paper <: Strategy end
+struct Scissors <: Strategy end
 
-strategypoints = Dict(
-    "X" => 1,
-    "Y" => 2,
-    "Z" => 3, 
-)
-
-function outcomepoints(them, us)
-    lose, draw, win = 0, 3, 6
-
-    if us == "X" && them == "A"
-        return draw
-    elseif us == "X" && them == "B"
-        return lose
-    elseif us == "X" && them == "C"
-        return win
-    elseif us == "Y" && them == "A"
-        return win
-    elseif us == "Y" && them == "B"
-        return draw
-    elseif us == "Y" && them == "C"
-        return lose
-    elseif us == "Z" && them == "A"
-        return lose
-    elseif us == "Z" && them == "B"
-        return win
-    elseif us == "Z" && them == "C"
-        return draw
+function strategy(letter::AbstractString)
+    if letter == "A" || letter == "X"
+        return Rock()
+    elseif letter == "B" || letter == "Y"
+        return Paper()
+    elseif letter == "C" || letter == "Z"
+        return Scissors()
+    else
+        throw(ArgumentError("Invalid letter: $letter."))
     end
 end
 
+abstract type Outcome end
 
-function points(line)
-    them, us = parseline(line)
-    return strategypoints[us] + outcomepoints(them, us)
+struct Win <: Outcome end
+struct Lose <: Outcome end
+struct Draw <: Outcome end
+
+play(::Strategy, ::Strategy) = Lose()
+play(::S, ::S) where S <: Strategy = Draw()
+play(::Rock, ::Scissors) = Win()
+play(::Paper, ::Rock) = Win()
+play(::Scissors, ::Paper) = Win()
+
+points(::Rock) = 1
+points(::Paper) = 2
+points(::Scissors) = 3
+
+points(::Win) = 6
+points(::Draw) = 3
+points(::Lose) = 0
+
+parseline(line) = split(line, " ")
+
+function points(line::AbstractString)
+    them, us = strategy.(parseline(line))
+    points(us) + points(play(us, them))
 end
 
+main(file) = mapreduce(points, +, readlines(file))
 
-sum(points.(lines))
+main("data.txt")
+
