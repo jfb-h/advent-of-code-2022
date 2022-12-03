@@ -5,11 +5,12 @@ struct Paper <: Strategy end
 struct Scissors <: Strategy end
 
 function strategy(letter::AbstractString)
-    if letter == "A" || letter == "X"
+    # not type stable
+    if letter == 'A' || letter == 'X'
         return Rock()
-    elseif letter == "B" || letter == "Y"
+    elseif letter == 'B' || letter == 'Y'
         return Paper()
-    elseif letter == "C" || letter == "Z"
+    elseif letter == 'C' || letter == 'Z'
         return Scissors()
     else
         throw(ArgumentError("Invalid letter: $letter."))
@@ -23,6 +24,7 @@ struct Lose <: Outcome end
 struct Draw <: Outcome end
 
 function outcome(letter::AbstractString)
+    # not type stable
     if letter == "X"
         return Lose()
     elseif letter == "Y"
@@ -56,10 +58,10 @@ points(::Win) = 6
 points(::Draw) = 3
 points(::Lose) = 0
 
-parseline(line) = split(line, " ")
+parseline(line) = first(line), last(line)
 
-function points(line::AbstractString)
-    them, us = parseline(line)
+function points(them::AbstractString, us::AbstractString)
+    #them, us = parseline(line)
     them = strategy(them)
     us = strategy(them, outcome(us))
     points(us) + points(play(us, them))
