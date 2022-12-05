@@ -21,3 +21,4 @@ function part2(file)
         priority(i)
     end
 end
+
